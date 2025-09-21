@@ -1,0 +1,14 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/dawid/Desktop/osold/target/artifacts",
+            "binaryPath": "/home/dawid/Desktop/osold/target/artifacts/myos.bin",
+            "binaryArgs": []
+        }
+    ],
+    "files.associations": {
+        "*.rusa": "rust",
+        "tty.h": "c",
+        "stdbool.h": "c"
+    }
+}

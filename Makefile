@@ -1,3 +1,5 @@
+export PATH := $(HOME)/Desktop/gcc-cross/bin:$(PATH)
+
 ARTIFACTS = target/artifacts
 BIN = $(ARTIFACTS)/myos.bin
 ISO_DIR = target/isoout
