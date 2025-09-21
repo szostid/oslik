@@ -42,13 +42,18 @@ typedef struct
 /// @brief Initializes the terminal for usage
 void terminal_initialize(void);
 
+/// @brief Clears the terminal, resets the cursor position and color.
+void terminal_clear(terminal_color_t background);
+
 /// @brief Reads the terminal entry at `x, y`
+///
 /// @param x X position in terminal
 /// @param y Y position in terminal
 /// @return Entry at provided position
 terminal_entry_t terminal_read_at(size_t x, size_t y);
 
 /// @brief Sets the entry at the provided position
+///
 /// @param entry Entry to set
 /// @param x X position in terminal
 /// @param y Y position in terminal
@@ -64,22 +69,28 @@ void terminal_next_line(void);
 void terminal_move_up(void);
 
 /// @brief Inserts the provided entry at the cursor position
+///
 /// @param entry The entry to insert
 void terminal_put_entry(terminal_entry_t entry);
 
 /// @brief Writes the provided `data` with the provided `size` to the terminal
 ///        at the cursor's position with the `color`
+///
 /// @param data Data to write to terminal
 /// @param size Size of the data to write
 /// @param color Color to write
-void terminal_write(const char *data, size_t size,
-                    terminal_entry_color_t color);
+void terminal_write(const char *data, size_t size);
 
 /// @brief Writes the provided null-terminated `data` to the terminal at
-/// cursor's
-///        position with the `color`
+/// cursor's position with the `color`
+///
 /// @param data Data to write to terminal. Must be null-terminated.
 /// @param color Color to write.
-void terminal_write_string(const char *data, terminal_entry_color_t color);
+void terminal_write_string(const char *data);
+
+/// @brief Sets the color that the next `terminal_write_*` functions will use
+///
+/// @param color Color to write
+void terminal_set_color(terminal_entry_color_t color);
 
 #endif

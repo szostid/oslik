@@ -9,16 +9,18 @@
 
 size_t terminal_row;
 size_t terminal_column;
+terminal_entry_color_t terminal_color;
 uint16_t *terminal_buffer = (uint16_t *)VGA_MEMORY;
 
-const terminal_entry_t BLANK_ENTRY = {
-    .character = ' ',
-    .color =
-        {
-            .foreground = VGA_COLOR_LIGHT_GREY,
-            .background = VGA_COLOR_BLACK,
-        },
-};
+static inline terminal_entry_t blank_entry(void)
+{
+    terminal_entry_t entry = {
+        .character = ' ',
+        .color = terminal_color,
+    };
+
+    return entry;
+}
 
 static inline uint16_t vga_entry_pack(terminal_entry_t terminal_entry)
 {
@@ -46,6 +48,11 @@ static size_t terminal_pos_idx(size_t x, size_t y)
     return y * VGA_WIDTH + x;
 }
 
+void terminal_set_color(terminal_entry_color_t color)
+{
+    terminal_color = color;
+}
+
 void terminal_set_at(terminal_entry_t entry, size_t x, size_t y)
 {
     const size_t index = terminal_pos_idx(x, y);
@@ -70,9 +77,11 @@ void terminal_move_up()
         }
     }
 
+    const terminal_entry_t blank_terminal_entry = blank_entry();
+
     for (size_t x = 0; x < VGA_WIDTH; x++)
     {
-        terminal_set_at(BLANK_ENTRY, x, VGA_HEIGHT - 1);
+        terminal_set_at(blank_terminal_entry, x, VGA_HEIGHT - 1);
     }
 }
 
@@ -110,34 +119,48 @@ void terminal_put_entry(terminal_entry_t entry)
     terminal_next_char();
 }
 
-void terminal_write(const char *data, size_t size, terminal_entry_color_t color)
+void terminal_write(const char *data, size_t size)
 {
     for (size_t i = 0; i < size; i++)
     {
         const terminal_entry_t entry = {
             .character = data[i],
-            .color = color,
+            .color = terminal_color,
         };
 
         terminal_put_entry(entry);
     }
 }
 
-void terminal_write_string(const char *data, terminal_entry_color_t color)
+void terminal_write_string(const char *data)
 {
-    terminal_write(data, strlen(data), color);
+    terminal_write(data, strlen(data));
 }
 
-void terminal_initialize(void)
+void terminal_clear(terminal_color_t background)
 {
     terminal_row = 0;
     terminal_column = 0;
+
+    terminal_entry_color_t default_color = {
+        .background = background,
+        .foreground = VGA_COLOR_WHITE,
+    };
+
+    terminal_color = default_color;
+
+    const terminal_entry_t blank_terminal_entry = blank_entry();
 
     for (size_t y = 0; y < VGA_HEIGHT; y++)
     {
         for (size_t x = 0; x < VGA_WIDTH; x++)
         {
-            terminal_set_at(BLANK_ENTRY, x, y);
+            terminal_set_at(blank_terminal_entry, x, y);
         }
     }
+}
+
+void terminal_initialize(void)
+{
+    terminal_clear(VGA_COLOR_BLACK);
 }

@@ -1,10 +1,9 @@
 export PATH := $(HOME)/Desktop/gcc-cross/bin:$(PATH)
 
 SRC = src
-INCLUDE_DIR = include
 ARTIFACTS = ../target/artifacts/libc
 
-CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I$(INCLUDE_DIR)
+CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra  -I include -I ../kernel/include -D __is_libk
 
 SRC_FILES := $(shell find $(SRC) -name "*.c")
 

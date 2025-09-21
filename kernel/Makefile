@@ -1,7 +1,6 @@
 export PATH := $(HOME)/Desktop/gcc-cross/bin:$(PATH)
 
 SRC = src
-INCLUDE_DIR = include ../libc/include
 ARTIFACTS = ../target/artifacts/kernel
 
 CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I include -I ../libc/include

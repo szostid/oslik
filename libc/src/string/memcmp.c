@@ -2,8 +2,8 @@
 
 int memcmp(const void *lhs, const void *rhs, size_t count)
 {
-    const unsigned char *lhs_bytes = (unsigned char *)lhs_bytes;
-    const unsigned char *rhs_bytes = (unsigned char *)rhs_bytes;
+    const unsigned char *lhs_bytes = (unsigned char *)lhs;
+    const unsigned char *rhs_bytes = (unsigned char *)rhs;
 
     for (size_t i = 0; i < count; i++)
     {

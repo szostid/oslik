@@ -1,19 +1,18 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <tty.h>
 
 void kernel_main(void)
 {
     terminal_initialize();
 
-    terminal_entry_color_t color = {
-        .background = VGA_COLOR_CYAN,
-        .foreground = VGA_COLOR_MAGENTA,
-    };
-
-    terminal_write_string("Hello, kernel World!\n", color);
-    terminal_write_string("Newline test!\n", color);
+    printf("Hello, hernel world\n");
+    printf("Newline test!\n");
 
     terminal_move_up();
+
+    panic("invalid stuff");
 }
