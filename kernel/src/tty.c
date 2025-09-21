@@ -3,6 +3,10 @@
 #include <string.h>
 #include <tty.h>
 
+#ifdef SERIAL_WRITE_TTY
+#include <serial.h>
+#endif
+
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 #define VGA_MEMORY 0xB8000
@@ -108,6 +112,10 @@ void terminal_next_char()
 
 void terminal_put_entry(terminal_entry_t entry)
 {
+#ifdef SERIAL_WRITE_TTY
+    write_serial((char)entry.character);
+#endif
+
     if (entry.character == '\n')
     {
         terminal_next_line();

@@ -3,7 +3,7 @@ export PATH := $(HOME)/Desktop/gcc-cross/bin:$(PATH)
 SRC = src
 ARTIFACTS = ../target/artifacts/kernel
 
-CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I include -I ../libc/include
+CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I include -I ../libc/include -D SERIAL_WRITE_TTY
 
 SRC_FILES := $(shell find $(SRC) -name "*.c")
 

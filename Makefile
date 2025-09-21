@@ -37,7 +37,7 @@ iso: $(BIN)
 	i686-elf-grub-mkrescue -o target/myos.iso $(ISO_DIR)
 
 run: iso
-	qemu-system-i386 -cdrom target/myos.iso
+	qemu-system-i386 -cdrom target/myos.iso -serial file:kernel.log
 
 clean:
 	@echo "Cleaning up project files..."
