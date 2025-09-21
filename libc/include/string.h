@@ -58,4 +58,10 @@ void *memcpy(void *__restrict dest, const void *__restrict src, size_t count);
 /// @returns Returns back the `dest` pointer
 void *memmove(void *dest, const void *src, size_t count);
 
+/// @brief Returns the length of a null-terminated string
+///
+/// @param data The buffer containing string data
+/// @returns The length of the string (the position of the null byte)
+size_t strlen(const char *data);
+
 #endif

@@ -9,6 +9,7 @@
     "files.associations": {
         "*.rusa": "rust",
         "tty.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "string.h": "c"
     }
 }

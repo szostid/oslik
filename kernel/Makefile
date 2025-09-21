@@ -2,22 +2,24 @@ export PATH := $(HOME)/Desktop/gcc-cross/bin:$(PATH)
 
 SRC = src
 INCLUDE_DIR = include ../libc/include
-ARTIFACTS = ../target/artifacts
+ARTIFACTS = ../target/artifacts/kernel
 
-CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I$(INCLUDE_DIR)
-LD_SCRIPT = $(SRC)/linker.ld
-OBJ = $(ARTIFACTS)/boot.o $(ARTIFACTS)/kernel.o $(ARTIFACTS)/tty.o
+CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I include -I ../libc/include
 
-all: $(OBJ)
+SRC_FILES := $(shell find $(SRC) -name "*.c")
 
-$(ARTIFACTS)/boot.o: $(SRC)/boot.S | $(ARTIFACTS)
+OBJ_FILES := $(patsubst $(SRC)/%.c,$(ARTIFACTS)/%.o,$(SRC_FILES)) \
+             $(ARTIFACTS)/boot.o
+
+$(ARTIFACTS)/%.o: $(SRC)/%.c | $(ARTIFACTS)
+	@mkdir -p $(dir $@)
+	i686-elf-gcc $(CFLAGS) -c $< -o $@
+
+$(ARTIFACTS)/%.o: $(SRC)/%.S | $(ARTIFACTS)
+	@mkdir -p $(dir $@)
 	i686-elf-as $< -o $@
 
-$(ARTIFACTS)/kernel.o: $(SRC)/kernel.c | $(ARTIFACTS)
-	i686-elf-gcc $(CFLAGS) -c $< -o $@
-
-$(ARTIFACTS)/tty.o: $(SRC)/tty.c | $(ARTIFACTS)
-	i686-elf-gcc $(CFLAGS) -c $< -o $@
+all: $(OBJ_FILES)
 
 $(ARTIFACTS):
 	mkdir -p $(ARTIFACTS)

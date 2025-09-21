@@ -1,19 +1,7 @@
-#include "tty.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-size_t strlen(const char *str)
-{
-    size_t len = 0;
-
-    while (str[len] != 0)
-    {
-        len++;
-    }
-
-    return len;
-}
+#include <tty.h>
 
 void kernel_main(void)
 {

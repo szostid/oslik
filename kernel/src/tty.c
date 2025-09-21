@@ -1,6 +1,7 @@
-#include "tty.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
+#include <tty.h>
 
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
