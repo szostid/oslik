@@ -1,9 +1,0 @@
-{
-    "makefile.launchConfigurations": [
-        {
-            "cwd": "/home/dawid/Desktop/osold/target/artifacts",
-            "binaryPath": "/home/dawid/Desktop/osold/target/artifacts/myos.bin",
-            "binaryArgs": []
-        }
-    ],
-}

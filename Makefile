@@ -1,3 +1,5 @@
+export PATH := $(HOME)/Desktop/gcc-cross/bin:$(PATH)
+
 # Define tools and paths once at the top level
 PREFIX = i686-elf
 LD = $(PREFIX)-gcc
@@ -20,7 +22,7 @@ all: $(BIN)
 
 $(BIN): build_kernel build_libc $(LD_SCRIPT)
 	@echo "LD $@"
-	# Find all .o files *after* sub-makes have run and pass them to the linker.
+# Find all .o files *after* sub-makes have run and pass them to the linker.
 	$(LD) -o $@ $(LDFLAGS) $(shell find $(ARTIFACTS) -name "*.o")
 	i686-elf-grub-file --is-x86-multiboot $@
 

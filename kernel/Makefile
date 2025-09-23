@@ -8,6 +8,7 @@ CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I include -I ../libc/inclu
 SRC_FILES := $(shell find $(SRC) -name "*.c")
 
 OBJ_FILES := $(patsubst $(SRC)/%.c,$(ARTIFACTS)/%.o,$(SRC_FILES)) \
+             $(ARTIFACTS)/gdt_asm.o \
              $(ARTIFACTS)/boot.o
 
 $(ARTIFACTS)/%.o: $(SRC)/%.c | $(ARTIFACTS)
