@@ -21,5 +21,11 @@ void kernel_main(void)
     asm volatile("int $0x3");
     asm volatile("int $0x4");
 
-    // kpanic("invalid stuff");
+    printf("everything's still working\n");
+
+    while (1)
+    {
+        printf("working\n");
+    }
+    // kpanic("invalid stuff\n");
 }

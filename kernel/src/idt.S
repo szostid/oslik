@@ -1,27 +1,66 @@
 .intel_syntax noprefix
 
 .global isr_stub_table
-.extern exception_handler
+.extern interrupt_handler
 
 .macro isr_no_err_stub num
 isr_stub_\num:
+    # Disable interrupts now that we're handling one. They will be re-enabled
+    # when we return from the interrupt and the CPU loads the old EFLAGS.
+    cli
+
+    # We push the emulated error code (the one which would've otherwise been
+    # visible to the `ist_err_stub`, pushed by the CPU), the interrupt code,
+    # and the register state.
+    push 0
+    push \num
     pushad
 
-    cld    # C code following the sysV ABI requires DF to be clear on function entry
-    call exception_handler
+    # C code following the sysV ABI requires DF to be clear on function entry
+    cld
 
+    # We push the stack pointer, which esentially points to everything we've
+    # just pushed onto the stack in this handler
+    push esp
+    call interrupt_handler
+    # Pop the stack pointer
+    add esp, 4
+
+    # We pop the register state, the interrupt code and the emulated error code
+    # that we've pushed at the beginning of this function
     popad
+    add esp, 8
+
     iret
 .endm
 
 .macro isr_err_stub num
 isr_stub_\num:
+    # Disable interrupts now that we're handling one. They will be re-enabled
+    # when we return from the interrupt and the CPU loads the old EFLAGS.
+    cli
+
+    # We push the interrupt code, the register state and error register state
+    push \num
     pushad
 
-    cld    # C code following the sysV ABI requires DF to be clear on function entry
-    call exception_handler
+    # C code following the sysV ABI requires DF to be clear on function entry
+    cld
 
+    # We push the stack pointer, which esentially points to everything we've
+    # just pushed onto the stack in this handler
+    push esp
+    call interrupt_handler
+    # Pop the stack pointer
+    add esp, 4
+
+    # We pop the register state and the interrupt code that we've pushed at the
+    # beginning of this function. We also have to pop the error code that was
+    # pushed by the CPU (`iret` does handle CS, EFLAGS and EIP but it does not
+    # handle the error code)
     popad
+    add esp, 8
+
     iret
 .endm
 

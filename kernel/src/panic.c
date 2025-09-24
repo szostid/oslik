@@ -2,11 +2,17 @@
 #include <stdio.h>
 #include <tty.h>
 
+void start_kpanic()
+{
+    // __asm__ volatile("cli");
+
+    terminal_clear(VGA_COLOR_BLUE);
+    printf("-------- KERNEL PANIC --------\n\n");
+}
+
 __attribute__((__noreturn__)) void kpanic(const char *__restrict format, ...)
 {
-    terminal_clear(VGA_COLOR_BLUE);
-
-    printf("kernel panic: ");
+    start_kpanic();
 
     va_list args;
     va_start(args, format);
@@ -15,10 +21,14 @@ __attribute__((__noreturn__)) void kpanic(const char *__restrict format, ...)
 
     va_end(args);
 
-    __asm__ volatile("hlt");
+    end_kpanic();
+}
 
+__attribute__((__noreturn__)) void end_kpanic()
+{
     while (1)
     {
+        __asm__ volatile("hlt");
     }
     __builtin_unreachable();
 }

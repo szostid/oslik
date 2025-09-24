@@ -127,16 +127,21 @@ void terminal_put_entry(terminal_entry_t entry)
     terminal_next_char();
 }
 
+static void terminal_put_char(const char data)
+{
+    const terminal_entry_t entry = {
+        .character = data,
+        .color = terminal_color,
+    };
+
+    terminal_put_entry(entry);
+}
+
 void terminal_write(const char *data, size_t size)
 {
     for (size_t i = 0; i < size; i++)
     {
-        const terminal_entry_t entry = {
-            .character = data[i],
-            .color = terminal_color,
-        };
-
-        terminal_put_entry(entry);
+        terminal_put_char(data[i]);
     }
 }
 
