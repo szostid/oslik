@@ -70,6 +70,43 @@ int vprintf(const char *__restrict format, va_list parameters)
                 return -1;
             written += len;
         }
+        else if (*format == 'd')
+        {
+            format++;
+            int val = va_arg(parameters, int);
+            // estimate length via buffer
+            char buffer[32];
+            char *ptr = buffer + sizeof(buffer);
+            char *start;
+            bool neg = false;
+            if (val == 0)
+            {
+                if (!print("0", 1))
+                    return -1;
+                written++;
+                continue;
+            }
+            if (val < 0)
+            {
+                neg = true;
+            }
+            unsigned int u =
+                neg ? (unsigned int)(-(val + 1)) + 1 : (unsigned int)val;
+            do
+            {
+                *--ptr = '0' + (u % 10);
+                u /= 10;
+            } while (u > 0);
+            if (neg)
+                *--ptr = '-';
+            start = ptr;
+            size_t len = (buffer + sizeof(buffer)) - start;
+            if (maxrem < len)
+                return -1;
+            if (!print(start, len))
+                return -1;
+            written += len;
+        }
         else
         {
             format = format_begun_at;
@@ -85,8 +122,6 @@ int vprintf(const char *__restrict format, va_list parameters)
             format += len;
         }
     }
-
-    return written;
 }
 
 int printf(const char *__restrict format, ...)

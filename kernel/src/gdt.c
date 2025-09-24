@@ -82,7 +82,7 @@
 
 #define SEGMENT_COUNT 4
 
-uint8_t gdt_table[(SEGMENT_COUNT + 1) * 8];
+static uint8_t gdt_table[(SEGMENT_COUNT + 1) * 8];
 
 extern void set_gdt(uint16_t limit, size_t base);
 extern void reload_segments(void);
@@ -122,7 +122,7 @@ void write_gdt_segment_entry(uint8_t *target, gdt_segment_descriptor_t source)
 {
     if (source.limit > 0xFFFFF)
     {
-        kpanic("GDT cannot encode limits larger than 0xFFFFF");
+        // kpanic("GDT cannot encode limits larger than 0xFFFFF");
     }
 
     target[0] = source.limit & 0xFF;

@@ -7,15 +7,16 @@ CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I include -I ../libc/inclu
 
 SRC_FILES := $(shell find $(SRC) -name "*.c")
 
-OBJ_FILES := $(patsubst $(SRC)/%.c,$(ARTIFACTS)/%.o,$(SRC_FILES)) \
-             $(ARTIFACTS)/gdt_asm.o \
-             $(ARTIFACTS)/boot.o
+OBJ_FILES := $(patsubst $(SRC)/%.c,$(ARTIFACTS)/%.c.o,$(SRC_FILES)) \
+             $(ARTIFACTS)/gdt.S.o \
+			 $(ARTIFACTS)/idt.S.o \
+             $(ARTIFACTS)/boot.S.o
 
-$(ARTIFACTS)/%.o: $(SRC)/%.c | $(ARTIFACTS)
+$(ARTIFACTS)/%.c.o: $(SRC)/%.c | $(ARTIFACTS)
 	@mkdir -p $(dir $@)
 	i686-elf-gcc $(CFLAGS) -c $< -o $@
 
-$(ARTIFACTS)/%.o: $(SRC)/%.S | $(ARTIFACTS)
+$(ARTIFACTS)/%.S.o: $(SRC)/%.S | $(ARTIFACTS)
 	@mkdir -p $(dir $@)
 	i686-elf-as $< -o $@
 
