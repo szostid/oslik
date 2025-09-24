@@ -10,6 +10,15 @@ void start_kpanic()
     printf("-------- KERNEL PANIC --------\n\n");
 }
 
+__attribute__((__noreturn__)) void end_kpanic()
+{
+    while (1)
+    {
+        __asm__ volatile("hlt");
+    }
+    __builtin_unreachable();
+}
+
 __attribute__((__noreturn__)) void kpanic(const char *__restrict format, ...)
 {
     start_kpanic();
@@ -22,13 +31,4 @@ __attribute__((__noreturn__)) void kpanic(const char *__restrict format, ...)
     va_end(args);
 
     end_kpanic();
-}
-
-__attribute__((__noreturn__)) void end_kpanic()
-{
-    while (1)
-    {
-        __asm__ volatile("hlt");
-    }
-    __builtin_unreachable();
 }
