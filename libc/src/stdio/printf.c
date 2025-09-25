@@ -122,6 +122,8 @@ int vprintf(const char *__restrict format, va_list parameters)
             format += len;
         }
     }
+
+    return written;
 }
 
 int printf(const char *__restrict format, ...)
