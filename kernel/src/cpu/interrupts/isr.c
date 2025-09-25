@@ -82,8 +82,6 @@ void fault_interrupt(interrupt_state_t *state)
 
     print_interrupt(state);
 
-    printf("------------------------------\n");
-
     end_kpanic();
 }
 

@@ -5,6 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+#define TTY_HEIGHT (VGA_HEIGHT - 1)
+#define SCRATCHPAD_WIDTH 78
+
 typedef enum
 {
     VGA_COLOR_BLACK = 0,
@@ -57,7 +62,7 @@ terminal_entry_t terminal_read_at(size_t x, size_t y);
 /// @param entry Entry to set
 /// @param x X position in terminal
 /// @param y Y position in terminal
-void terminal_set_at(terminal_entry_t entry, size_t x, size_t y);
+void terminal_set_entry_at(terminal_entry_t entry, size_t x, size_t y);
 
 /// @brief Moves the terminal cursor to the next character's position
 void terminal_next_char(void);
@@ -92,5 +97,10 @@ void terminal_write_string(const char *data);
 ///
 /// @param color Color to write
 void terminal_set_color(terminal_entry_color_t color);
+
+/// @brief Writes the provided bytes to the scratchpad
+///
+/// The provided buffer should be valid for `SCRATCHPAD_WIDTH` writes
+void set_scratchpad(char *buf);
 
 #endif

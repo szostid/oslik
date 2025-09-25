@@ -1,8 +1,11 @@
+#include <panic.h>
 #include <ports.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+#include <tty.h>
 
 #define KEYBOARD_DATA_PORT 0x60
 
@@ -137,13 +140,8 @@ static inline void set_modifier_state(bool present, uint16_t modifier)
     }
     else
     {
-        modifier &= ~modifier;
+        modifiers &= ~modifier;
     }
-}
-
-bool is_input_capitalized()
-{
-    return is_any_modifier_present(MOD_SHIFT_L | MOD_SHIFT_R | MOD_CAPS_LOCK);
 }
 
 bool is_shift_pressed()
@@ -161,7 +159,18 @@ bool is_alt_pressed()
     return is_any_modifier_present(MOD_ALT_L | MOD_ALT_R);
 }
 
-static char scratchpad[256];
+bool is_input_capitalized()
+{
+    bool shift = is_shift_pressed();
+    bool caps = is_any_modifier_present(MOD_CAPS_LOCK);
+    return (!caps && shift) || (caps && !shift);
+}
+
+/// Scratchpad.
+///
+/// NOTE: To ensure the scratchpad is always null-terminated, the scratchpad
+/// buffer is one (zeroed) byte longer than the possible max user input.
+static char scratchpad[257];
 /// Pointer to the scratchpad character index that will be written next
 static int scratchpad_ptr = 0;
 
@@ -182,7 +191,7 @@ void on_key_press()
     bool was_pressed = (scancode & 128) == 0;
     uint8_t key = scancode & (~128);
 
-    if (was_pressed)
+    if (!was_pressed)
     {
         switch (key)
         {
@@ -266,25 +275,25 @@ void on_key_press()
         case KB_F7:
         case KB_F8:
         case KB_F9:
-        case KB_F10:
             printf("F%d pressed\n", key - 0x3a);
             break;
 
+        case KB_F10:
+            kpanic("F10 pressed\n");
+            break;
+
         case KB_Backspace:
-            scratchpad[scratchpad_ptr - 1] = 0;
-            scratchpad_ptr--;
+            if (scratchpad_ptr > 0)
+            {
+                scratchpad[scratchpad_ptr - 1] = 0;
+                scratchpad_ptr--;
+            }
             break;
 
         case KB_Enter:
-            printf("Executed %s", (char *)(&scratchpad));
-
-            for (size_t i = 0; i < 256; i++)
-            {
-                scratchpad[i] = 0;
-            }
-
+            printf("%s\n", (char *)(&scratchpad));
+            memset(scratchpad, 0, sizeof(scratchpad));
             scratchpad_ptr = 0;
-
             break;
 
         case KB_LShift:
@@ -314,5 +323,16 @@ void on_key_press()
         }
     }
 
-    printf("scratchpad: %s\n", (char *)(&scratchpad));
+    int scratchpad_start_idx;
+
+    if (scratchpad_ptr < SCRATCHPAD_WIDTH)
+    {
+        scratchpad_start_idx = 0;
+    }
+    else
+    {
+        scratchpad_start_idx = scratchpad_ptr - SCRATCHPAD_WIDTH;
+    }
+
+    set_scratchpad(&scratchpad[scratchpad_start_idx]);
 }

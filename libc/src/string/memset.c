@@ -1,6 +1,6 @@
 #include <string.h>
 
-void *memset_f(void *dest, int ch, size_t count)
+void *memset(void *dest, int ch, size_t count)
 {
     const unsigned char byte = (unsigned char)ch;
     unsigned char *dest_bytes = (unsigned char *)dest;

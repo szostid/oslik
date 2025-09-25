@@ -1,6 +1,6 @@
 #include <string.h>
 
-void *memcpy_f(void *__restrict dest, const void *__restrict src, size_t count)
+void *memcpy(void *__restrict dest, const void *__restrict src, size_t count)
 {
     unsigned char *dest_bytes = (unsigned char *)dest;
     const unsigned char *src_bytes = (const unsigned char *)src;

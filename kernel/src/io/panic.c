@@ -18,6 +18,8 @@ void start_kpanic()
 
 __attribute__((__noreturn__)) void end_kpanic()
 {
+    printf("\n------------------------------");
+
     while (1)
     {
         __asm__ volatile("hlt");

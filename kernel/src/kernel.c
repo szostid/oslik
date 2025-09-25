@@ -15,15 +15,7 @@ void kernel_main(void)
     pic_remap();
     idt_init();
 
-    printf("Hello, hernel world\n");
-    printf("Newline test!\n");
-
-    terminal_move_up();
-
-    __asm__ volatile("int $0x3");
-    __asm__ volatile("int $0x4");
-
-    printf("everything's still working\n");
+    printf("Hello, world!\n");
 
     while (1)
     {

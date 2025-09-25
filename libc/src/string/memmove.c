@@ -1,6 +1,6 @@
 #include <string.h>
 
-void *memmove_f(void *dest, const void *src, size_t count)
+void *memmove(void *dest, const void *src, size_t count)
 {
     unsigned char *dest_bytes = (unsigned char *)dest;
     const unsigned char *src_bytes = (const unsigned char *)src;
