@@ -96,6 +96,22 @@ isr_no_err_stub 28
 isr_no_err_stub 29
 isr_err_stub    30
 isr_no_err_stub 31
+isr_no_err_stub 32
+isr_no_err_stub 33
+isr_no_err_stub 34
+isr_no_err_stub 35
+isr_no_err_stub 36
+isr_no_err_stub 37
+isr_no_err_stub 38
+isr_no_err_stub 39
+isr_no_err_stub 40
+isr_no_err_stub 41
+isr_no_err_stub 42
+isr_no_err_stub 43
+isr_no_err_stub 44
+isr_no_err_stub 45
+isr_no_err_stub 46
+isr_no_err_stub 47
 
 isr_stub_table:
     .long isr_stub_0
@@ -130,3 +146,19 @@ isr_stub_table:
     .long isr_stub_29
     .long isr_stub_30
     .long isr_stub_31
+    .long isr_stub_32
+    .long isr_stub_33
+    .long isr_stub_34
+    .long isr_stub_35
+    .long isr_stub_36
+    .long isr_stub_37
+    .long isr_stub_38
+    .long isr_stub_39
+    .long isr_stub_40
+    .long isr_stub_41
+    .long isr_stub_42
+    .long isr_stub_43
+    .long isr_stub_44
+    .long isr_stub_45
+    .long isr_stub_46
+    .long isr_stub_47

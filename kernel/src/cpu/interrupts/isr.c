@@ -1,4 +1,5 @@
 #include <panic.h>
+#include <pic.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <tty.h>
@@ -106,8 +107,8 @@ void interrupt_handler(interrupt_state_t *state)
     }
     else
     {
-        // Handle hardware interrupts (IRQs) from devices like keyboard, timer,
-        // etc. For now, we'll just print a message.
         printf("\n\nHardware IRQ Received: %d\n", state->int_no);
+
+        pic_eoi(state->int_no - 32);
     }
 }

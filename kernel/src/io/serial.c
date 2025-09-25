@@ -1,4 +1,3 @@
-// #include <sys/io.h>
 #include <ports.h>
 #include <stdint.h>
 

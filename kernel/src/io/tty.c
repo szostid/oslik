@@ -96,6 +96,7 @@ void terminal_next_line()
 
     if (terminal_row == VGA_HEIGHT)
     {
+        terminal_row = VGA_HEIGHT - 1;
         terminal_move_up();
     }
 }

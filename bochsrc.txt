@@ -1,0 +1,8 @@
+megs: 64
+romimage: file=/usr/share/bochs/BIOS-bochs-legacy
+
+boot: cdrom
+ata0-master: type=cdrom, path="target/myos.iso", status=inserted
+
+com1: enabled=1, mode=file, dev="kernel.log"
+display_library: x

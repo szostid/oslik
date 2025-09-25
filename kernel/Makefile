@@ -5,12 +5,13 @@ ARTIFACTS = ../target/artifacts/kernel
 
 CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -I include -I ../libc/include -D SERIAL_WRITE_TTY
 
-SRC_FILES := $(shell find $(SRC) -name "*.c")
+C_FILES := $(shell find $(SRC) -name "*.c")
+ASM_FILES := $(shell find $(SRC) -name "*.S")
 
-OBJ_FILES := $(patsubst $(SRC)/%.c,$(ARTIFACTS)/%.c.o,$(SRC_FILES)) \
-             $(ARTIFACTS)/gdt.S.o \
-			 $(ARTIFACTS)/idt.S.o \
-             $(ARTIFACTS)/boot.S.o
+C_OBJS := $(patsubst $(SRC)/%.c,$(ARTIFACTS)/%.c.o,$(C_FILES))
+ASM_OBJS := $(patsubst $(SRC)/%.S,$(ARTIFACTS)/%.S.o,$(ASM_FILES))
+
+OBJ_FILES := $(C_OBJS) $(ASM_OBJS)
 
 $(ARTIFACTS)/%.c.o: $(SRC)/%.c | $(ARTIFACTS)
 	@mkdir -p $(dir $@)

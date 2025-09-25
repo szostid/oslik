@@ -41,7 +41,7 @@ void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags)
     descriptor->reserved = 0;
 }
 
-#define IDT_MAX_DESCRIPTORS 32
+#define IDT_MAX_DESCRIPTORS 48
 
 static bool vectors[IDT_MAX_DESCRIPTORS];
 extern void *isr_stub_table[];
@@ -51,10 +51,10 @@ void idt_init()
     idtr.base = (uintptr_t)(&idt[0]);
     idtr.limit = (uint16_t)(sizeof(idt_entry_t) * IDT_MAX_DESCRIPTORS - 1);
 
-    for (uint8_t vector = 0; vector < 32; vector++)
+    for (uint8_t vector = 0; vector < IDT_MAX_DESCRIPTORS; vector++)
     {
         idt_set_descriptor(vector, isr_stub_table[vector], IDT_GATE_INTERRUPT);
-        vectors[vector] = true;
+        vectors[vector] = vector < 32;
     }
 
     // load the new IDT

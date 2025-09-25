@@ -16,7 +16,7 @@ LD_SCRIPT = kernel/linker.ld
 LDFLAGS = -T $(LD_SCRIPT) -ffreestanding -O2 -nostdlib -lgcc
 
 # Phony targets do not represent files and will always run their recipes.
-.PHONY: all clean iso run build_kernel build_libc
+.PHONY: all clean iso run run_bochs build_kernel build_libc
 
 all: $(BIN)
 
@@ -40,6 +40,9 @@ iso: $(BIN)
 
 run: iso
 	qemu-system-i386 -cdrom target/myos.iso -serial file:kernel.log
+
+run_bochs: iso
+	bochs -q -f bochsrc.txt
 
 clean:
 	@echo "Cleaning up project files..."

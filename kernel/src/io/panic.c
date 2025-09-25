@@ -4,7 +4,7 @@
 
 void start_kpanic()
 {
-    // __asm__ volatile("cli");
+    __asm__ volatile("cli");
 
     terminal_clear(VGA_COLOR_BLUE);
     printf("-------- KERNEL PANIC --------\n\n");
