@@ -4,9 +4,15 @@
 
 void start_kpanic()
 {
+    // When the kernel panics, we no longer want to receive any interrupts -
+    // first of all, the kernel panic message must be written without any
+    // interrupts, but also, the system is likely in an invalid state, where it
+    // shouldn't execute anymore, and executing interrupts would in fact cause
+    // code to execute
     __asm__ volatile("cli");
 
     terminal_clear(VGA_COLOR_BLUE);
+
     printf("-------- KERNEL PANIC --------\n\n");
 }
 

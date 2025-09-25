@@ -1,3 +1,4 @@
+#include <input.h>
 #include <panic.h>
 #include <pic.h>
 #include <stdint.h>
@@ -107,8 +108,23 @@ void interrupt_handler(interrupt_state_t *state)
     }
     else
     {
-        printf("\n\nHardware IRQ Received: %d\n", state->int_no);
-
-        pic_eoi(state->int_no - 32);
+        handle_hw_interrupt(state->int_no - 32);
     }
+}
+
+void handle_hw_interrupt(int32_t int_no)
+{
+    switch (int_no)
+    {
+    case 0:
+        break;
+    case 1:
+        on_key_press();
+        break;
+    default:
+        printf("Hardware interrupt #%d received\n", int_no);
+        break;
+    }
+
+    pic_eoi(int_no);
 }
