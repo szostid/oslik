@@ -40,7 +40,7 @@ static const char *exception_labels[] = {
     "[0x1F] Inexplicable Error",
 };
 
-typedef struct registers
+typedef struct
 {
     uint32_t edi, esi, ebp, esp_dummy;
     uint32_t ebx, edx, ecx, eax;
@@ -50,6 +50,23 @@ typedef struct registers
 
     uint32_t eip, cs, eflags;
 } interrupt_state_t;
+
+void handle_hw_interrupt(int32_t int_no)
+{
+    switch (int_no)
+    {
+    case 0:
+        break;
+    case 1:
+        on_key_press();
+        break;
+    default:
+        printf("Hardware interrupt #%d received\n", int_no);
+        break;
+    }
+
+    pic_eoi(int_no);
+}
 
 void print_interrupt(interrupt_state_t *state)
 {
@@ -108,21 +125,4 @@ void interrupt_handler(interrupt_state_t *state)
     {
         handle_hw_interrupt(state->int_no - 32);
     }
-}
-
-void handle_hw_interrupt(int32_t int_no)
-{
-    switch (int_no)
-    {
-    case 0:
-        break;
-    case 1:
-        on_key_press();
-        break;
-    default:
-        printf("Hardware interrupt #%d received\n", int_no);
-        break;
-    }
-
-    pic_eoi(int_no);
 }
