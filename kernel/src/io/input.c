@@ -321,6 +321,25 @@ void on_key_press()
         default:
             printf("key %d\n", key);
         }
+
+        // TODO:
+        // - KB_ERRCODE
+        // - KB_Esc
+        // - KB_Tab
+        // - KB_Keypad_Asterisk
+        // - KB_Keypad_Key7
+        // - KB_Keypad_Key8
+        // - KB_Keypad_Key9
+        // - KB_Keypad_Minus
+        // - KB_Keypad_Key4
+        // - KB_Keypad_Key5
+        // - KB_Keypad_Key6
+        // - KB_Keypad_Plus
+        // - KB_Keypad_Key1
+        // - KB_Keypad_Key2
+        // - KB_Keypad_Key3
+        // - KB_Keypad_Key0
+        // - KB_Keypad_Dot
     }
 
     int scratchpad_start_idx;
