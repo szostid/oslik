@@ -2,6 +2,7 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
+#include <input.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -47,7 +48,7 @@ typedef struct
 } terminal_entry_t;
 
 /// @brief Callback called on a keypress.
-typedef void (*keypress_callback_t)();
+typedef void (*keypress_callback_t)(keys_t key, bool was_pressed);
 
 /// @brief A virtual terminal buffer.
 ///

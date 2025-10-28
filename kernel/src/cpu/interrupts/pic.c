@@ -1,5 +1,5 @@
 #include "pic.h"
-#include <ports.h> // You'll need a header for outb() and inb()
+#include <ports.h>
 
 #define PIC1_COMMAND 0x20
 #define PIC1_DATA 0x21

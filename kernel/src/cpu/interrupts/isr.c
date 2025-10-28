@@ -1,5 +1,7 @@
 #include <panic.h>
 #include <pic.h>
+#include <ports.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <tty.h>
@@ -57,10 +59,15 @@ void handle_hw_interrupt(int32_t int_no)
     case 0:
         break;
     case 1:
+        uint8_t scancode = inb(0x60);
+
+        bool was_pressed = (scancode & 128) == 0;
+        uint8_t key = scancode & (~128);
+
         tty_t *active_tty = get_active_tty();
         if (active_tty->on_keypress)
         {
-            active_tty->on_keypress();
+            active_tty->on_keypress(key, was_pressed);
         }
         break;
     default:
