@@ -1,4 +1,3 @@
-#include <input.h>
 #include <panic.h>
 #include <pic.h>
 #include <stdint.h>
@@ -58,7 +57,11 @@ void handle_hw_interrupt(int32_t int_no)
     case 0:
         break;
     case 1:
-        on_keypress();
+        tty_t *active_tty = get_active_tty();
+        if (active_tty->on_keypress)
+        {
+            active_tty->on_keypress();
+        }
         break;
     default:
         printf("Hardware interrupt #%d received\n", int_no);

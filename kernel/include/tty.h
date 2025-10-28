@@ -46,6 +46,9 @@ typedef struct
     terminal_entry_color_t color;
 } terminal_entry_t;
 
+/// @brief Callback called on a keypress.
+typedef void (*keypress_callback_t)();
+
 /// @brief A virtual terminal buffer.
 ///
 /// All terminal operations will operate on virtual terminal buffers.
@@ -56,6 +59,7 @@ typedef struct
     size_t cursor_row;
     size_t cursor_col;
     terminal_entry_color_t color;
+    keypress_callback_t on_keypress;
 } tty_t;
 
 /// @brief Initializes the terminal for usage
@@ -124,8 +128,9 @@ void tty_set_color(tty_t *tty, terminal_entry_color_t color);
 /// Otherwise, this function has no effect.
 void tty_flush(tty_t *tty);
 
-/// @brief Sets the active tty.
 void set_active_tty(tty_t *tty);
+
+tty_t *get_active_tty();
 
 /// @brief The kernel tty.
 extern tty_t kernel_tty;

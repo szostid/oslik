@@ -1,5 +1,6 @@
 #include <gdt.h>
 #include <idt.h>
+#include <input.h>
 #include <paging.h>
 #include <panic.h>
 #include <pic.h>
@@ -16,6 +17,7 @@ void kernel_main(void)
     pic_remap();
     idt_init();
     setup_paging();
+    setup_input();
 
     printf("Hello, world!\n");
 

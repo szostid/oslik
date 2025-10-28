@@ -370,14 +370,7 @@ void write_scratchpad()
     tty_write_scratchpad(&scratchpad[scratchpad_start_idx]);
 }
 
-static keypress_callback_t keypress_callback = write_scratchpad;
-
-void set_keypress_callback(keypress_callback_t new_callback)
+void setup_input()
 {
-    keypress_callback = new_callback;
-}
-
-void on_keypress()
-{
-    keypress_callback();
+    kernel_tty.on_keypress = write_scratchpad;
 }

@@ -198,3 +198,8 @@ void set_active_tty(tty_t *tty)
     active_tty = tty;
     tty_flush(tty);
 }
+
+tty_t *get_active_tty()
+{
+    return active_tty;
+}
