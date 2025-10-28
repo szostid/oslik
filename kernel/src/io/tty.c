@@ -9,22 +9,9 @@
 
 #define VGA_MEMORY 0xB8000
 
-// lowest row is for the scratchpad
+tty_t kernel_tty;
 
-size_t terminal_row;
-size_t terminal_column;
-terminal_entry_color_t terminal_color;
-uint16_t *terminal_buffer = (uint16_t *)VGA_MEMORY;
-
-static inline terminal_entry_t blank_entry(void)
-{
-    terminal_entry_t entry = {
-        .character = ' ',
-        .color = terminal_color,
-    };
-
-    return entry;
-}
+tty_t *active_tty = &kernel_tty;
 
 static inline uint16_t vga_entry_pack(terminal_entry_t terminal_entry)
 {
@@ -47,81 +34,85 @@ static inline terminal_entry_t vga_entry_unpack(uint16_t packed_entry)
     return entry;
 }
 
-static size_t terminal_pos_idx(size_t x, size_t y)
+static size_t vga_index(size_t x, size_t y)
 {
     return y * VGA_WIDTH + x;
 }
 
-void terminal_set_color(terminal_entry_color_t color)
+void tty_set_color(tty_t *tty, terminal_entry_color_t color)
 {
-    terminal_color = color;
+    tty->color = color;
 }
 
-void terminal_set_entry_at(terminal_entry_t entry, size_t x, size_t y)
+void tty_set_entry_at(tty_t *tty, terminal_entry_t entry, size_t x, size_t y)
 {
-    const size_t index = terminal_pos_idx(x, y);
-    terminal_buffer[index] = vga_entry_pack(entry);
+    const size_t index = vga_index(x, y);
+
+    tty->buffer[index] = vga_entry_pack(entry);
 }
 
-void terminal_set_char_at(char c, size_t x, size_t y)
+void tty_set_char_at(tty_t *tty, char c, size_t x, size_t y)
 {
     const terminal_entry_t entry = {
         .character = c,
-        .color = terminal_color,
+        .color = tty->color,
     };
 
-    terminal_set_entry_at(entry, x, y);
+    tty_set_entry_at(tty, entry, x, y);
 }
 
-terminal_entry_t terminal_read_at(size_t x, size_t y)
+terminal_entry_t tty_read_at(tty_t *tty, size_t x, size_t y)
 {
-    const size_t index = terminal_pos_idx(x, y);
-    return vga_entry_unpack(terminal_buffer[index]);
+    const size_t index = vga_index(x, y);
+    return vga_entry_unpack(tty->buffer[index]);
 }
 
-void terminal_move_up()
+void tty_move_up(tty_t *tty)
 {
     for (size_t y = 1; y < TTY_HEIGHT; y++)
     {
         for (size_t x = 0; x < VGA_WIDTH; x++)
         {
-            const terminal_entry_t entry = terminal_read_at(x, y);
+            const terminal_entry_t entry = tty_read_at(tty, x, y);
 
-            terminal_set_entry_at(entry, x, y - 1);
+            tty_set_entry_at(tty, entry, x, y - 1);
         }
     }
 
-    const terminal_entry_t blank_terminal_entry = blank_entry();
+    const terminal_entry_t blank_terminal_entry = {
+        .character = ' ',
+        .color = tty->color,
+    };
 
     for (size_t x = 0; x < VGA_WIDTH; x++)
     {
-        terminal_set_entry_at(blank_terminal_entry, x, TTY_HEIGHT - 1);
+        tty_set_entry_at(tty, blank_terminal_entry, x, TTY_HEIGHT - 1);
     }
 }
 
-void terminal_next_line()
+void tty_next_line(tty_t *tty)
 {
-    terminal_column = 0;
-    terminal_row += 1;
+    tty->cursor_col = 0;
+    tty->cursor_row += 1;
 
-    if (terminal_row == TTY_HEIGHT)
+    if (tty->cursor_row == TTY_HEIGHT)
     {
-        terminal_row = TTY_HEIGHT - 1;
-        terminal_move_up();
+        tty->cursor_row = TTY_HEIGHT - 1;
+        tty_move_up(tty);
     }
 }
 
-void terminal_next_char()
+void tty_next_char(tty_t *tty)
 {
-    terminal_column += 1;
+    tty->cursor_col += 1;
 
-    if (terminal_column == VGA_WIDTH)
+    if (tty->cursor_col == VGA_WIDTH)
     {
-        terminal_next_line();
+        tty_next_line(tty);
     }
 }
 
-void terminal_put_entry(terminal_entry_t entry)
+void tty_put_entry(tty_t *tty, terminal_entry_t entry)
 {
 #ifdef SERIAL_WRITE_TTY
     write_serial((char)entry.character);
@@ -129,73 +120,81 @@ void terminal_put_entry(terminal_entry_t entry)
 
     if (entry.character == '\n')
     {
-        terminal_next_line();
+        tty_next_line(tty);
         return;
     }
 
-    terminal_set_entry_at(entry, terminal_column, terminal_row);
+    tty_set_entry_at(tty, entry, tty->cursor_col, tty->cursor_row);
 
-    terminal_next_char();
+    tty_next_char(tty);
 }
 
-static void terminal_put_char(const char data)
+static void tty_put_char(tty_t *tty, const char data)
 {
     const terminal_entry_t entry = {
         .character = data,
-        .color = terminal_color,
+        .color = tty->color,
     };
 
-    terminal_put_entry(entry);
+    tty_put_entry(tty, entry);
 }
 
-void terminal_write(const char *data, size_t size)
+void tty_write(tty_t *tty, const char *data, size_t size)
 {
     for (size_t i = 0; i < size; i++)
     {
-        terminal_put_char(data[i]);
+        tty_put_char(tty, data[i]);
     }
 }
 
-void terminal_write_string(const char *data)
+void tty_write_string(tty_t *tty, const char *data)
 {
-    terminal_write(data, strlen(data));
+    tty_write(tty, data, strlen(data));
 }
 
-void terminal_clear(terminal_color_t background)
+void tty_clear(tty_t *tty, terminal_color_t background)
 {
-    terminal_row = 0;
-    terminal_column = 0;
+    tty->cursor_row = 0;
+    tty->cursor_col = 0;
 
     terminal_entry_color_t default_color = {
         .background = background,
         .foreground = VGA_COLOR_WHITE,
     };
 
-    terminal_color = default_color;
+    tty->color = default_color;
 
-    const terminal_entry_t blank_terminal_entry = blank_entry();
+    const terminal_entry_t blank_terminal_entry = {
+        .character = ' ',
+        .color = default_color,
+    };
 
     for (size_t y = 0; y < VGA_HEIGHT; y++)
     {
         for (size_t x = 0; x < VGA_WIDTH; x++)
         {
-            terminal_set_entry_at(blank_terminal_entry, x, y);
+            tty_set_entry_at(tty, blank_terminal_entry, x, y);
         }
     }
 }
 
-void set_scratchpad(char *buf)
+void tty_initialize(tty_t *tty)
 {
-    terminal_set_char_at('>', 0, TTY_HEIGHT);
-    terminal_set_char_at(' ', 1, TTY_HEIGHT);
-
-    for (size_t i = 0; i < SCRATCHPAD_WIDTH; i++)
-    {
-        terminal_set_char_at(buf[i], i + 2, TTY_HEIGHT);
-    }
+    tty_clear(tty, VGA_COLOR_BLACK);
 }
 
-void terminal_initialize(void)
+void tty_flush(tty_t *tty)
 {
-    terminal_clear(VGA_COLOR_BLACK);
+    if (active_tty != tty)
+    {
+        return;
+    }
+
+    memcpy((void *)VGA_MEMORY, tty->buffer, sizeof(uint16_t[BUFFER_SIZE]));
+}
+
+void set_active_tty(tty_t *tty)
+{
+    active_tty = tty;
+    tty_flush(tty);
 }

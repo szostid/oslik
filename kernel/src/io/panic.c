@@ -11,7 +11,9 @@ void start_kpanic()
     // code to execute
     __asm__ volatile("cli");
 
-    terminal_clear(VGA_COLOR_BLUE);
+    set_active_tty(&kernel_tty);
+
+    tty_clear(&kernel_tty, VGA_COLOR_BLUE);
 
     printf("-------- KERNEL PANIC --------\n\n");
 }

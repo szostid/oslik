@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(__is_libk)
+#include <tty.h>
+#endif
+
 static bool print(const char *data, size_t length)
 {
     const unsigned char *bytes = (const unsigned char *)data;
@@ -134,6 +138,10 @@ int printf(const char *__restrict format, ...)
     int written = vprintf(format, parameters);
 
     va_end(parameters);
+
+#if defined(__is_libk)
+    tty_flush(&kernel_tty);
+#endif
 
     return written;
 }

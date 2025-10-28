@@ -11,7 +11,7 @@
 
 void kernel_main(void)
 {
-    terminal_initialize();
+    tty_initialize(&kernel_tty);
     setup_gdt();
     pic_remap();
     idt_init();

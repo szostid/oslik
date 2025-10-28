@@ -1,3 +1,4 @@
+#include <input.h>
 #include <panic.h>
 #include <ports.h>
 #include <stdbool.h>
@@ -184,7 +185,20 @@ void scratchpad_write(char c)
     scratchpad[scratchpad_ptr++] = c;
 }
 
-void on_key_press()
+void tty_write_scratchpad(char *buf)
+{
+    tty_set_char_at(&kernel_tty, '>', 0, TTY_HEIGHT);
+    tty_set_char_at(&kernel_tty, ' ', 1, TTY_HEIGHT);
+
+    for (size_t i = 0; i < SCRATCHPAD_WIDTH; i++)
+    {
+        tty_set_char_at(&kernel_tty, buf[i], i + 2, TTY_HEIGHT);
+    }
+
+    tty_flush(&kernel_tty);
+}
+
+void write_scratchpad()
 {
     uint8_t scancode = inb(0x60);
 
@@ -353,5 +367,17 @@ void on_key_press()
         scratchpad_start_idx = scratchpad_ptr - SCRATCHPAD_WIDTH;
     }
 
-    set_scratchpad(&scratchpad[scratchpad_start_idx]);
+    tty_write_scratchpad(&scratchpad[scratchpad_start_idx]);
+}
+
+static keypress_callback_t keypress_callback = write_scratchpad;
+
+void set_keypress_callback(keypress_callback_t new_callback)
+{
+    keypress_callback = new_callback;
+}
+
+void on_keypress()
+{
+    keypress_callback();
 }

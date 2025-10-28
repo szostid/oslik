@@ -58,7 +58,7 @@ void handle_hw_interrupt(int32_t int_no)
     case 0:
         break;
     case 1:
-        on_key_press();
+        on_keypress();
         break;
     default:
         printf("Hardware interrupt #%d received\n", int_no);

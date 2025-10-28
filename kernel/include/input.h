@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
-void on_key_press(void);
+typedef void (*keypress_callback_t)();
+
+void on_keypress(void);
+void set_keypress_callback(keypress_callback_t callback);
 
 #endif

@@ -8,7 +8,7 @@ int putchar(int ic)
 {
 #if defined(__is_libk)
     char c = (char)ic;
-    terminal_write(&c, 1);
+    tty_write(&kernel_tty, &c, 1);
 #else
 #error "Cannot build libc for non-kernel targets yet"
 #endif

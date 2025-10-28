@@ -7,6 +7,8 @@
 
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
+#define BUFFER_SIZE VGA_HEIGHT *VGA_WIDTH
+// lowest row is for the scratchpad
 #define TTY_HEIGHT (VGA_HEIGHT - 1)
 #define SCRATCHPAD_WIDTH 78
 
@@ -44,39 +46,59 @@ typedef struct
     terminal_entry_color_t color;
 } terminal_entry_t;
 
+/// @brief A virtual terminal buffer.
+///
+/// All terminal operations will operate on virtual terminal buffers.
+/// The terminal buffer will only flush on a call to `tty_flush`.
+typedef struct
+{
+    uint16_t buffer[BUFFER_SIZE];
+    size_t cursor_row;
+    size_t cursor_col;
+    terminal_entry_color_t color;
+} tty_t;
+
 /// @brief Initializes the terminal for usage
-void terminal_initialize(void);
+void tty_initialize(tty_t *tty);
 
 /// @brief Clears the terminal, resets the cursor position and color.
-void terminal_clear(terminal_color_t background);
+void tty_clear(tty_t *tty, terminal_color_t background);
 
 /// @brief Reads the terminal entry at `x, y`
 ///
 /// @param x X position in terminal
 /// @param y Y position in terminal
 /// @return Entry at provided position
-terminal_entry_t terminal_read_at(size_t x, size_t y);
+terminal_entry_t tty_read_at(tty_t *tty, size_t x, size_t y);
 
 /// @brief Sets the entry at the provided position
 ///
 /// @param entry Entry to set
 /// @param x X position in terminal
 /// @param y Y position in terminal
-void terminal_set_entry_at(terminal_entry_t entry, size_t x, size_t y);
+void tty_set_entry_at(tty_t *tty, terminal_entry_t entry, size_t x, size_t y);
+
+/// @brief Sets the character at the provided position. The color will be the
+/// tty's default color.
+///
+/// @param c Character to set
+/// @param x X position in terminal
+/// @param y Y position in terminal
+void tty_set_char_at(tty_t *tty, char c, size_t x, size_t y);
 
 /// @brief Moves the terminal cursor to the next character's position
-void terminal_next_char(void);
+void tty_next_char(tty_t *tty);
 
 /// @brief Moves the terminal cursor to a new line
-void terminal_next_line(void);
+void tty_next_line(tty_t *tty);
 
 /// @brief Scrolls the terminal up by one line
-void terminal_move_up(void);
+void tty_move_up(tty_t *tty);
 
 /// @brief Inserts the provided entry at the cursor position
 ///
 /// @param entry The entry to insert
-void terminal_put_entry(terminal_entry_t entry);
+void tty_put_entry(tty_t *tty, terminal_entry_t entry);
 
 /// @brief Writes the provided `data` with the provided `size` to the terminal
 ///        at the cursor's position with the `color`
@@ -84,23 +106,28 @@ void terminal_put_entry(terminal_entry_t entry);
 /// @param data Data to write to terminal
 /// @param size Size of the data to write
 /// @param color Color to write
-void terminal_write(const char *data, size_t size);
+void tty_write(tty_t *tty, const char *data, size_t size);
 
 /// @brief Writes the provided null-terminated `data` to the terminal at
 /// cursor's position with the `color`
 ///
 /// @param data Data to write to terminal. Must be null-terminated.
 /// @param color Color to write.
-void terminal_write_string(const char *data);
+void tty_write_string(tty_t *tty, const char *data);
 
 /// @brief Sets the color that the next `terminal_write_*` functions will use
 ///
 /// @param color Color to write
-void terminal_set_color(terminal_entry_color_t color);
+void tty_set_color(tty_t *tty, terminal_entry_color_t color);
 
-/// @brief Writes the provided bytes to the scratchpad
-///
-/// The provided buffer should be valid for `SCRATCHPAD_WIDTH` writes
-void set_scratchpad(char *buf);
+/// @brief If the provided tty is active, it will be flushed to the tty buffer.
+/// Otherwise, this function has no effect.
+void tty_flush(tty_t *tty);
+
+/// @brief Sets the active tty.
+void set_active_tty(tty_t *tty);
+
+/// @brief The kernel tty.
+extern tty_t kernel_tty;
 
 #endif
