@@ -270,6 +270,9 @@ void write_scratchpad(keys_t key, bool was_pressed)
         scratchpad_start_idx = scratchpad_ptr - SCRATCHPAD_WIDTH;
     }
 
+    kernel_tty.cursor_col = scratchpad_ptr - scratchpad_start_idx + 1;
+    kernel_tty.cursor_row = VGA_HEIGHT - 1;
+
     tty_write_scratchpad(&scratchpad[scratchpad_start_idx]);
 }
 

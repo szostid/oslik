@@ -399,7 +399,7 @@ void run_tetris()
         last_frame_time = time;
 
         if (does_falling_piece_collide_after_moving(&board, (vec2_t){0, 1}))
-        {
+        { 
             solidify_falling_piece(&board);
             check_board_for_clearing(&board);
             bool did_loose = spawn_falling_piece(&board);
