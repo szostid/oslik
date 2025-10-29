@@ -92,6 +92,20 @@ void tty_write_scratchpad(char *buf)
     tty_flush(&kernel_tty);
 }
 
+extern void run_tetris(void);
+
+void handle_scratchpad(char *buf)
+{
+    if (memcmp(buf, "tetris", 6) == 0)
+    {
+        printf("Opening tetris\n");
+        run_tetris();
+        return;
+    }
+
+    printf("%s\n", (char *)(&scratchpad));
+}
+
 void write_scratchpad(keys_t key, bool was_pressed)
 {
     if (!was_pressed)
@@ -194,7 +208,7 @@ void write_scratchpad(keys_t key, bool was_pressed)
             break;
 
         case KB_Enter:
-            printf("%s\n", (char *)(&scratchpad));
+            handle_scratchpad(scratchpad);
             memset(scratchpad, 0, sizeof(scratchpad));
             scratchpad_ptr = 0;
             break;
@@ -261,5 +275,6 @@ void write_scratchpad(keys_t key, bool was_pressed)
 
 void setup_input()
 {
+    kernel_tty.cursor_visible = true;
     kernel_tty.on_keypress = write_scratchpad;
 }

@@ -91,8 +91,8 @@ static piece_shape_t shapes[] = {
 typedef void (*piece_pos_callback_t)(vec2_t pos);
 
 static int32_t colors[] = {
-    VGA_COLOR_CYAN,  VGA_COLOR_BLUE,    VGA_COLOR_LIGHT_BROWN,
-    VGA_COLOR_GREEN, VGA_COLOR_MAGENTA, VGA_COLOR_RED,
+    TTY_COLOR_CYAN,  TTY_COLOR_BLUE,    TTY_COLOR_LIGHT_BROWN,
+    TTY_COLOR_GREEN, TTY_COLOR_MAGENTA, TTY_COLOR_RED,
 };
 
 static board_t board;
@@ -175,13 +175,11 @@ bool does_falling_piece_collide_after_moving(board_t *board, vec2_t offset)
 
 bool does_falling_piece_collide_after_rotating(board_t *board)
 {
-    uint32_t *angle = &board->falling_piece.angle;
-
-    angle++;
+    board->falling_piece.angle++;
 
     bool does_collide = does_piece_colilde(board, &board->falling_piece);
 
-    angle--;
+    board->falling_piece.angle--;
 
     return does_collide;
 }
@@ -240,14 +238,14 @@ void draw_board(board_t *board)
 
             if (spot == 0)
             {
-                terminal_entry_color_t entry = {VGA_COLOR_DARK_GREY,
-                                                VGA_COLOR_BLACK};
+                terminal_entry_color_t entry = {TTY_COLOR_DARK_GREY,
+                                                TTY_COLOR_BLACK};
                 tty_set_color(&tetris_tty, entry);
                 tty_set_char_at(&tetris_tty, '.', x, y);
             }
             else
             {
-                terminal_entry_color_t entry = {VGA_COLOR_WHITE, spot};
+                terminal_entry_color_t entry = {TTY_COLOR_WHITE, spot};
                 tty_set_color(&tetris_tty, entry);
                 tty_set_char_at(&tetris_tty, ' ', x, y);
             }
@@ -267,7 +265,7 @@ void draw_board(board_t *board)
             add_vec2(offset_rotated, falling_piece_shape->offsets[angle]);
         vec2_t block_position = add_vec2(falling_piece->position, offset);
 
-        terminal_entry_color_t entry = {VGA_COLOR_WHITE, falling_piece->color};
+        terminal_entry_color_t entry = {TTY_COLOR_WHITE, falling_piece->color};
         tty_set_color(&tetris_tty, entry);
         tty_set_char_at(&tetris_tty, ' ', block_position.x, block_position.y);
     }
@@ -278,7 +276,7 @@ void draw_board(board_t *board)
 void draw_lost_text()
 {
     tty_set_color(&tetris_tty,
-                  (terminal_entry_color_t){VGA_COLOR_WHITE, VGA_COLOR_RED});
+                  (terminal_entry_color_t){TTY_COLOR_WHITE, TTY_COLOR_RED});
     tty_set_char_at(&tetris_tty, 'L', 3, 10);
     tty_set_char_at(&tetris_tty, 'o', 4, 10);
     tty_set_char_at(&tetris_tty, 's', 5, 10);
@@ -319,6 +317,8 @@ void check_board_for_clearing(board_t *board)
 
 void input_handler(keys_t key, bool was_pressed)
 {
+    // should_stop = true;
+
     if (!was_pressed)
     {
         return;
@@ -327,6 +327,7 @@ void input_handler(keys_t key, bool was_pressed)
     switch (key)
     {
     case KB_A:
+    case KB_Arrow_Left:
         if (!does_falling_piece_collide_after_moving(&board, (vec2_t){-1, 0}))
         {
             board.falling_piece.position =
@@ -334,6 +335,7 @@ void input_handler(keys_t key, bool was_pressed)
         }
         break;
     case KB_D:
+    case KB_Arrow_Right:
         if (!does_falling_piece_collide_after_moving(&board, (vec2_t){1, 0}))
         {
             board.falling_piece.position =
@@ -341,6 +343,7 @@ void input_handler(keys_t key, bool was_pressed)
         }
         break;
     case KB_S:
+    case KB_Arrow_Down:
         if (!does_falling_piece_collide_after_moving(&board, (vec2_t){0, 1}))
         {
             board.falling_piece.position =
@@ -348,11 +351,16 @@ void input_handler(keys_t key, bool was_pressed)
         }
         break;
     case KB_W:
+    case KB_Arrow_Up:
         if (!does_falling_piece_collide_after_rotating(&board))
         {
             board.falling_piece.angle++;
         }
         break;
+    case KB_Q:
+    case KB_Esc:
+        should_stop = true;
+        return;
     default:
         return;
     }
@@ -366,6 +374,10 @@ void run_tetris()
 {
     tetris_tty.on_keypress = input_handler;
     tetris_tty.cursor_visible = false;
+    should_stop = false;
+    memset(&board, 0, sizeof(board_t));
+
+    tty_initialize(&tetris_tty);
 
     set_active_tty(&tetris_tty);
 
@@ -395,7 +407,18 @@ void run_tetris()
             if (did_loose)
             {
                 draw_lost_text();
-                return;
+
+                while (true)
+                {
+                    uint64_t time = rdtsc();
+
+                    if (time - last_frame_time > CYCLES * 2)
+                    {
+                        break;
+                    }
+                }
+
+                break;
             }
         }
         else
@@ -406,4 +429,6 @@ void run_tetris()
 
         draw_board(&board);
     }
+
+    set_active_tty(&kernel_tty);
 }

@@ -65,10 +65,24 @@ void handle_hw_interrupt(int32_t int_no)
         uint8_t key = scancode & (~128);
 
         tty_t *active_tty = get_active_tty();
+
         if (active_tty->on_keypress)
         {
+            // the user callback may enter an infinite loop,
+            // so we should send an EOI signal to the PIC before
+            // calling the user callback. we will return early
+            // to avoid the usual call to pic_eoi at the end of
+            // this function.
+            //
+            // it shouldn't be much of an issue if another keypress
+            // is received when handling keypresses.
+            pic_eoi(int_no);
+
             active_tty->on_keypress(key, was_pressed);
+
+            return;
         }
+
         break;
     default:
         printf("Hardware interrupt #%d received\n", int_no);

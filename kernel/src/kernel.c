@@ -23,10 +23,8 @@ void kernel_main(void)
 
     printf("Hello, world!\n");
 
-    run_tetris();
-
-    // while (1)
-    // {
-    //     __asm__ volatile("hlt");
-    // }
+    while (1)
+    {
+        __asm__ volatile("hlt");
+    }
 }

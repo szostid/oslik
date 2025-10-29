@@ -14,7 +14,7 @@ void start_kpanic()
 
     set_active_tty(&kernel_tty);
 
-    tty_clear(&kernel_tty, VGA_COLOR_BLUE);
+    tty_clear(&kernel_tty, TTY_COLOR_BLUE);
 
     printf("-------- KERNEL PANIC --------\n\n");
 }

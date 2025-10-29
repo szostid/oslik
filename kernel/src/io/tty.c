@@ -190,7 +190,7 @@ void tty_clear(tty_t *tty, terminal_color_t background)
 
     terminal_entry_color_t default_color = {
         .background = background,
-        .foreground = VGA_COLOR_WHITE,
+        .foreground = TTY_COLOR_WHITE,
     };
 
     tty->color = default_color;
@@ -211,7 +211,8 @@ void tty_clear(tty_t *tty, terminal_color_t background)
 
 void tty_initialize(tty_t *tty)
 {
-    tty_clear(tty, VGA_COLOR_BLACK);
+    tty_clear(tty, TTY_COLOR_BLACK);
+    tty_flush(tty);
 }
 
 void tty_flush(tty_t *tty)
