@@ -59,6 +59,7 @@ typedef struct
     uint16_t buffer[BUFFER_SIZE];
     size_t cursor_row;
     size_t cursor_col;
+    bool cursor_visible;
     terminal_entry_color_t color;
     keypress_callback_t on_keypress;
 } tty_t;

@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <tty.h>
 
+extern void run_tetris(void);
+
 void kernel_main(void)
 {
     tty_initialize(&kernel_tty);
@@ -21,8 +23,10 @@ void kernel_main(void)
 
     printf("Hello, world!\n");
 
-    while (1)
-    {
-        __asm__ volatile("hlt");
-    }
+    run_tetris();
+
+    // while (1)
+    // {
+    //     __asm__ volatile("hlt");
+    // }
 }

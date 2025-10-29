@@ -1,3 +1,4 @@
+#include <idt.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <tty.h>
@@ -9,7 +10,7 @@ void start_kpanic()
     // interrupts, but also, the system is likely in an invalid state, where it
     // shouldn't execute anymore, and executing interrupts would in fact cause
     // code to execute
-    __asm__ volatile("cli");
+    isr_pause();
 
     set_active_tty(&kernel_tty);
 

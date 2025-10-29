@@ -46,6 +46,16 @@ void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags)
 static bool vectors[IDT_MAX_DESCRIPTORS];
 extern void *isr_stub_table[];
 
+void isr_pause()
+{
+    __asm__ volatile("cli");
+}
+
+void isr_resume()
+{
+    __asm__ volatile("sti");
+}
+
 void idt_init()
 {
     idtr.base = (uintptr_t)(&idt[0]);
@@ -59,6 +69,6 @@ void idt_init()
 
     // load the new IDT
     __asm__ volatile("lidt %0" : : "m"(idtr));
-    // set the interrupt flag
-    __asm__ volatile("sti");
+
+    isr_resume();
 }

@@ -1,3 +1,5 @@
+#include <idt.h>
+#include <ports.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -12,6 +14,35 @@
 tty_t kernel_tty;
 
 tty_t *active_tty = &kernel_tty;
+
+static inline void vga_set_cursor_position(size_t x, size_t y)
+{
+    uint16_t pos = y * VGA_WIDTH + x;
+
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, (uint8_t)(pos & 0xFF));
+
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
+}
+
+static inline void vga_set_cursor_visible(bool visible)
+{
+    outb(0x3D4, 0x0A);
+    uint8_t cursor_start = inb(0x3D5);
+
+    if (visible)
+    {
+        cursor_start &= ~0x20;
+    }
+    else
+    {
+        cursor_start |= 0x20;
+    }
+
+    outb(0x3D4, 0x0A);
+    outb(0x3D5, cursor_start);
+}
 
 static inline uint16_t vga_entry_pack(terminal_entry_t terminal_entry)
 {
@@ -190,7 +221,13 @@ void tty_flush(tty_t *tty)
         return;
     }
 
+    isr_pause();
+
     memcpy((void *)VGA_MEMORY, tty->buffer, sizeof(uint16_t[BUFFER_SIZE]));
+    vga_set_cursor_position(tty->cursor_col, tty->cursor_row);
+    vga_set_cursor_visible(tty->cursor_visible);
+
+    isr_resume();
 }
 
 void set_active_tty(tty_t *tty)
