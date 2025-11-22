@@ -93,6 +93,7 @@ void tty_write_scratchpad(char *buf)
 }
 
 extern void run_tetris(void);
+extern void run_pong(void);
 
 void handle_scratchpad(char *buf)
 {
@@ -100,6 +101,13 @@ void handle_scratchpad(char *buf)
     {
         printf("Opening tetris\n");
         run_tetris();
+        return;
+    }
+
+    if (memcmp(buf, "pong", 4) == 0)
+    {
+        printf("Opening pong\n");
+        run_pong();
         return;
     }
 

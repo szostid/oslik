@@ -315,10 +315,8 @@ void check_board_for_clearing(board_t *board)
     }
 }
 
-void input_handler(keys_t key, bool was_pressed)
+void tetris_input_handler(keys_t key, bool was_pressed)
 {
-    // should_stop = true;
-
     if (!was_pressed)
     {
         return;
@@ -372,13 +370,12 @@ void input_handler(keys_t key, bool was_pressed)
 
 void run_tetris()
 {
-    tetris_tty.on_keypress = input_handler;
+    tetris_tty.on_keypress = tetris_input_handler;
     tetris_tty.cursor_visible = false;
     should_stop = false;
     memset(&board, 0, sizeof(board_t));
 
     tty_initialize(&tetris_tty);
-
     set_active_tty(&tetris_tty);
 
     srand((uint32_t)rdtsc());
@@ -399,7 +396,7 @@ void run_tetris()
         last_frame_time = time;
 
         if (does_falling_piece_collide_after_moving(&board, (vec2_t){0, 1}))
-        { 
+        {
             solidify_falling_piece(&board);
             check_board_for_clearing(&board);
             bool did_loose = spawn_falling_piece(&board);

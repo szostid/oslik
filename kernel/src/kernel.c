@@ -10,8 +10,6 @@
 #include <stdio.h>
 #include <tty.h>
 
-extern void run_tetris(void);
-
 void kernel_main(void)
 {
     tty_initialize(&kernel_tty);
