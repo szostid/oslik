@@ -27,7 +27,7 @@ static void outb_and_io_wait(uint16_t port, uint8_t val)
     io_wait();
 }
 
-void pic_remap(void)
+void setup_pic(void)
 {
     uint8_t mask1 = inb(PIC1_DATA);
     uint8_t mask2 = inb(PIC2_DATA);

@@ -284,8 +284,10 @@ void write_scratchpad(keys_t key, bool was_pressed, void *data)
     tty_write_scratchpad(&scratchpad[scratchpad_start_idx]);
 }
 
+/// @brief Sets up the writing to scratchpad on `kernel_tty`
 void setup_input()
 {
+    tty_initialize(&kernel_tty);
     kernel_tty.cursor_visible = true;
     tty_set_keypress_callback(&kernel_tty, write_scratchpad, NULL);
 }

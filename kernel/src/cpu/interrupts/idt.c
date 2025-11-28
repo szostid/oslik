@@ -56,7 +56,7 @@ void isr_resume()
     __asm__ volatile("sti");
 }
 
-void idt_init()
+void setup_idt()
 {
     idtr.base = (uintptr_t)(&idt[0]);
     idtr.limit = (uint16_t)(sizeof(idt_entry_t) * IDT_MAX_DESCRIPTORS - 1);

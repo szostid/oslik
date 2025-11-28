@@ -3,8 +3,9 @@
 
 #include <stdint.h>
 
-/// @brief Remaps the hardware interrupts from 0..16 to 32..48
-void pic_remap(void);
+/// @brief Sets up the hardware interrupts by remapping
+///        PIC interrupts from 0..16 to 32..48
+void setup_pic(void);
 
 /// @brief Notifies the PIC about the end of hardware interrupt handling
 /// @param irq The hardware interrupt number (in range 0 - 16)
