@@ -22,13 +22,16 @@
 
 typedef struct
 {
-    /// @brief Scratchpad buffer
+    /// @brief Scratchpad buffer + zero byte at the end for null termination
     char data[257];
     /// @brief The index in the scratchpad at which the
     ///        next character will be written
     int next_insert_ptr;
     /// @brief Currently pressed modifiers
     uint16_t modifiers;
+    /// @brief Registered TTY commands
+    scratchpad_cmd_t commands[128];
+    int command_count;
 } scratchpad_t;
 
 static inline bool is_any_modifier_present(scratchpad_t *scratchpad,
@@ -72,6 +75,11 @@ bool is_input_capitalized(scratchpad_t *scratchpad)
     return (!caps && shift) || (caps && !shift);
 }
 
+void scratchpad_add_command(scratchpad_t *scratchpad, scratchpad_cmd_t cmd)
+{
+    scratchpad->commands[scratchpad->command_count++] = cmd;
+}
+
 void scratchpad_write(scratchpad_t *scratchpad, char c)
 {
     if (scratchpad->next_insert_ptr == 256)
@@ -95,26 +103,24 @@ void tty_write_scratchpad(char *buf)
     tty_flush(&kernel_tty);
 }
 
-extern void run_tetris(void);
-extern void run_pong(void);
-
-void handle_scratchpad(char *buf)
+void handle_scratchpad(scratchpad_t *scratchpad)
 {
-    if (memcmp(buf, "tetris", 6) == 0)
+    for (int i = 0; i < scratchpad->command_count; i++)
     {
-        printf("Opening tetris\n");
-        run_tetris();
-        return;
+        scratchpad_cmd_t *cmd = &scratchpad->commands[i];
+
+        if (memcmp(&scratchpad->data, cmd->name, cmd->name_len) == 0)
+        {
+            (cmd->callback)();
+            goto cleanup;
+        }
     }
 
-    if (memcmp(buf, "pong", 4) == 0)
-    {
-        printf("Opening pong\n");
-        run_pong();
-        return;
-    }
+    printf("Unknown command: %s\n", &scratchpad->data);
 
-    printf("%s\n", buf);
+cleanup:
+    memset(&scratchpad->data, 0, sizeof(scratchpad->data));
+    scratchpad->next_insert_ptr = 0;
 }
 
 void write_scratchpad(keys_t key, bool was_pressed, void *data)
@@ -220,9 +226,7 @@ void write_scratchpad(keys_t key, bool was_pressed, void *data)
             break;
 
         case KB_Enter:
-            handle_scratchpad((char *)&scratchpad->data);
-            memset(&scratchpad->data, 0, sizeof(scratchpad->data));
-            scratchpad->next_insert_ptr = 0;
+            handle_scratchpad(scratchpad);
             break;
 
         case KB_LShift:
@@ -248,7 +252,7 @@ void write_scratchpad(keys_t key, bool was_pressed, void *data)
             break;
 
         default:
-            printf("key %d\n", key);
+            printf("Unhandleable key: %d\n", key);
         }
 
         // TODO:
@@ -283,6 +287,7 @@ void write_scratchpad(keys_t key, bool was_pressed, void *data)
     }
 
     // this breaks printing because tty prints characters at cursor position
+
     // kernel_tty.cursor_col =
     //     scratchpad->next_insert_ptr - scratchpad_start_idx + 2;
     // kernel_tty.cursor_row = VGA_HEIGHT - 1;
@@ -298,4 +303,9 @@ void setup_input()
     tty_initialize(&kernel_tty);
     kernel_tty.cursor_visible = false;
     tty_set_keypress_callback(&kernel_tty, write_scratchpad, &scratchpad);
+}
+
+void add_command(scratchpad_cmd_t cmd)
+{
+    scratchpad_add_command(&scratchpad, cmd);
 }

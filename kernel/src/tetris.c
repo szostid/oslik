@@ -1,3 +1,4 @@
+#include <input.h>
 #include <random.h>
 #include <stdio.h>
 #include <string.h>
@@ -438,4 +439,15 @@ void run_tetris()
     }
 
     set_active_tty(&kernel_tty);
+}
+
+void init_tetris()
+{
+    scratchpad_cmd_t cmd = {
+        .callback = run_tetris,
+        .name = "tetris",
+        .name_len = 6,
+    };
+
+    add_command(cmd);
 }

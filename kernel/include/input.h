@@ -4,7 +4,17 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef void (*scratchpad_cmd_callback_t)();
+
+typedef struct
+{
+    scratchpad_cmd_callback_t callback;
+    char *name;
+    int name_len;
+} scratchpad_cmd_t;
+
 void setup_input();
+void add_command(scratchpad_cmd_t cmd);
 
 // clang-format off
 

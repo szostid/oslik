@@ -336,3 +336,14 @@ void run_pong()
 
     set_active_tty(&kernel_tty);
 }
+
+void init_pong()
+{
+    scratchpad_cmd_t cmd = {
+        .callback = run_pong,
+        .name = "pong",
+        .name_len = 4,
+    };
+
+    add_command(cmd);
+}
