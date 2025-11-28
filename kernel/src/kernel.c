@@ -14,6 +14,9 @@ void kernel_main(void)
     setup_paging();
 
     printf("Hello, world!\n");
+    printf("Hello, world1!\n");
+    printf("Hello, world2!\n");
+    printf("Hello, world3!\n");
 
     while (1)
     {

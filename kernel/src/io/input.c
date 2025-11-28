@@ -10,73 +10,76 @@
 
 #define HANDLE_KEY(KEY, LW, HI)                                                \
     case (KEY):                                                                \
-        if (is_shift_pressed())                                                \
+        if (is_shift_pressed(scratchpad))                                      \
         {                                                                      \
-            scratchpad_write((HI));                                            \
+            scratchpad_write(scratchpad, (HI));                                \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            scratchpad_write((LW));                                            \
+            scratchpad_write(scratchpad, (LW));                                \
         }                                                                      \
         break;
 
-static uint16_t modifiers = 0;
-
-static inline bool is_any_modifier_present(uint16_t present_modifiers)
+typedef struct
 {
-    return (modifiers & present_modifiers) != 0;
+    /// @brief Scratchpad buffer
+    char data[257];
+    /// @brief The index in the scratchpad at which the
+    ///        next character will be written
+    int next_insert_ptr;
+    /// @brief Currently pressed modifiers
+    uint16_t modifiers;
+} scratchpad_t;
+
+static inline bool is_any_modifier_present(scratchpad_t *scratchpad,
+                                           uint16_t present_modifiers)
+{
+    return (scratchpad->modifiers & present_modifiers) != 0;
 }
 
-static inline void set_modifier_state(bool present, uint16_t modifier)
+static inline void set_modifier_state(scratchpad_t *scratchpad, bool present,
+                                      uint16_t modifier)
 {
     if (present)
     {
-        modifiers |= modifier;
+        scratchpad->modifiers |= modifier;
     }
     else
     {
-        modifiers &= ~modifier;
+        scratchpad->modifiers &= ~modifier;
     }
 }
 
-bool is_shift_pressed()
+bool is_shift_pressed(scratchpad_t *scratchpad)
 {
-    return is_any_modifier_present(MOD_SHIFT_L | MOD_SHIFT_R);
+    return is_any_modifier_present(scratchpad, MOD_SHIFT_L | MOD_SHIFT_R);
 }
 
-bool is_ctrl_pressed()
+bool is_ctrl_pressed(scratchpad_t *scratchpad)
 {
-    return is_any_modifier_present(MOD_CTRL_L | MOD_CTRL_R);
+    return is_any_modifier_present(scratchpad, MOD_CTRL_L | MOD_CTRL_R);
 }
 
-bool is_alt_pressed()
+bool is_alt_pressed(scratchpad_t *scratchpad)
 {
-    return is_any_modifier_present(MOD_ALT_L | MOD_ALT_R);
+    return is_any_modifier_present(scratchpad, MOD_ALT_L | MOD_ALT_R);
 }
 
-bool is_input_capitalized()
+bool is_input_capitalized(scratchpad_t *scratchpad)
 {
-    bool shift = is_shift_pressed();
-    bool caps = is_any_modifier_present(MOD_CAPS_LOCK);
+    bool shift = is_shift_pressed(scratchpad);
+    bool caps = is_any_modifier_present(scratchpad, MOD_CAPS_LOCK);
     return (!caps && shift) || (caps && !shift);
 }
 
-/// Scratchpad.
-///
-/// NOTE: To ensure the scratchpad is always null-terminated, the scratchpad
-/// buffer is one (zeroed) byte longer than the possible max user input.
-static char scratchpad[257];
-/// Pointer to the scratchpad character index that will be written next
-static int scratchpad_ptr = 0;
-
-void scratchpad_write(char c)
+void scratchpad_write(scratchpad_t *scratchpad, char c)
 {
-    if (scratchpad_ptr == 256)
+    if (scratchpad->next_insert_ptr == 256)
     {
         return;
     }
 
-    scratchpad[scratchpad_ptr++] = c;
+    scratchpad->data[scratchpad->next_insert_ptr++] = c;
 }
 
 void tty_write_scratchpad(char *buf)
@@ -111,26 +114,28 @@ void handle_scratchpad(char *buf)
         return;
     }
 
-    printf("%s\n", (char *)(&scratchpad));
+    printf("%s\n", buf);
 }
 
 void write_scratchpad(keys_t key, bool was_pressed, void *data)
 {
+    scratchpad_t *scratchpad = (scratchpad_t *)data;
+
     if (!was_pressed)
     {
         switch (key)
         {
         case KB_LShift:
-            set_modifier_state(false, MOD_SHIFT_L);
+            set_modifier_state(scratchpad, false, MOD_SHIFT_L);
             break;
         case KB_RShift:
-            set_modifier_state(false, MOD_SHIFT_R);
+            set_modifier_state(scratchpad, false, MOD_SHIFT_R);
             break;
         case KB_LAlt:
-            set_modifier_state(false, MOD_ALT_L);
+            set_modifier_state(scratchpad, false, MOD_ALT_L);
             break;
         case KB_LCtrl:
-            set_modifier_state(false, MOD_CTRL_L);
+            set_modifier_state(scratchpad, false, MOD_CTRL_L);
             break;
         default:
             break;
@@ -208,39 +213,38 @@ void write_scratchpad(keys_t key, bool was_pressed, void *data)
             break;
 
         case KB_Backspace:
-            if (scratchpad_ptr > 0)
+            if (scratchpad->next_insert_ptr > 0)
             {
-                scratchpad[scratchpad_ptr - 1] = 0;
-                scratchpad_ptr--;
+                scratchpad->data[--scratchpad->next_insert_ptr] = 0;
             }
             break;
 
         case KB_Enter:
-            handle_scratchpad(scratchpad);
-            memset(scratchpad, 0, sizeof(scratchpad));
-            scratchpad_ptr = 0;
+            handle_scratchpad((char *)&scratchpad->data);
+            memset(&scratchpad->data, 0, sizeof(scratchpad->data));
+            scratchpad->next_insert_ptr = 0;
             break;
 
         case KB_LShift:
-            set_modifier_state(true, MOD_SHIFT_L);
+            set_modifier_state(scratchpad, true, MOD_SHIFT_L);
             break;
         case KB_RShift:
-            set_modifier_state(true, MOD_SHIFT_R);
+            set_modifier_state(scratchpad, true, MOD_SHIFT_R);
             break;
         case KB_LAlt:
-            set_modifier_state(true, MOD_ALT_L);
+            set_modifier_state(scratchpad, true, MOD_ALT_L);
             break;
         case KB_LCtrl:
-            set_modifier_state(true, MOD_CTRL_L);
+            set_modifier_state(scratchpad, true, MOD_CTRL_L);
             break;
         case KB_CapsLock:
-            modifiers ^= MOD_CAPS_LOCK;
+            scratchpad->modifiers ^= MOD_CAPS_LOCK;
             break;
         case KB_NumLock:
-            modifiers ^= MOD_NUM_LOCK;
+            scratchpad->modifiers ^= MOD_NUM_LOCK;
             break;
         case KB_ScrollLock:
-            modifiers ^= MOD_SCROLL_LOCK;
+            scratchpad->modifiers ^= MOD_SCROLL_LOCK;
             break;
 
         default:
@@ -269,25 +273,29 @@ void write_scratchpad(keys_t key, bool was_pressed, void *data)
 
     int scratchpad_start_idx;
 
-    if (scratchpad_ptr < SCRATCHPAD_WIDTH)
+    if (scratchpad->next_insert_ptr < SCRATCHPAD_WIDTH)
     {
         scratchpad_start_idx = 0;
     }
     else
     {
-        scratchpad_start_idx = scratchpad_ptr - SCRATCHPAD_WIDTH;
+        scratchpad_start_idx = scratchpad->next_insert_ptr - SCRATCHPAD_WIDTH;
     }
 
-    kernel_tty.cursor_col = scratchpad_ptr - scratchpad_start_idx + 1;
-    kernel_tty.cursor_row = VGA_HEIGHT - 1;
+    // this breaks printing because tty prints characters at cursor position
+    // kernel_tty.cursor_col =
+    //     scratchpad->next_insert_ptr - scratchpad_start_idx + 2;
+    // kernel_tty.cursor_row = VGA_HEIGHT - 1;
 
-    tty_write_scratchpad(&scratchpad[scratchpad_start_idx]);
+    tty_write_scratchpad((char *)&scratchpad->data[scratchpad_start_idx]);
 }
+
+scratchpad_t scratchpad;
 
 /// @brief Sets up the writing to scratchpad on `kernel_tty`
 void setup_input()
 {
     tty_initialize(&kernel_tty);
-    kernel_tty.cursor_visible = true;
-    tty_set_keypress_callback(&kernel_tty, write_scratchpad, NULL);
+    kernel_tty.cursor_visible = false;
+    tty_set_keypress_callback(&kernel_tty, write_scratchpad, &scratchpad);
 }
