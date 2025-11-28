@@ -215,6 +215,13 @@ void tty_initialize(tty_t *tty)
     tty_flush(tty);
 }
 
+void tty_set_keypress_callback(tty_t *tty, keypress_callback_t callback,
+                               void *data)
+{
+    tty->on_keypress = callback;
+    tty->keypress_callback_data = data;
+}
+
 void tty_flush(tty_t *tty)
 {
     if (active_tty != tty)

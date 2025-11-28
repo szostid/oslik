@@ -114,7 +114,7 @@ void handle_scratchpad(char *buf)
     printf("%s\n", (char *)(&scratchpad));
 }
 
-void write_scratchpad(keys_t key, bool was_pressed)
+void write_scratchpad(keys_t key, bool was_pressed, void *data)
 {
     if (!was_pressed)
     {
@@ -287,5 +287,5 @@ void write_scratchpad(keys_t key, bool was_pressed)
 void setup_input()
 {
     kernel_tty.cursor_visible = true;
-    kernel_tty.on_keypress = write_scratchpad;
+    tty_set_keypress_callback(&kernel_tty, write_scratchpad, NULL);
 }

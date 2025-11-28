@@ -157,7 +157,7 @@ void update_game(pong_game_t *game, float dt)
     right_paddle->verticalPosition += right_paddle->velocity;
 }
 
-void pong_input_handler(keys_t key, bool was_pressed)
+void pong_input_handler(keys_t key, bool was_pressed, void *data)
 {
     if (!was_pressed)
     {
@@ -289,7 +289,7 @@ void draw_paddle(paddle_t *paddle)
 
 void run_pong()
 {
-    pong_tty.on_keypress = pong_input_handler;
+    tty_set_keypress_callback(&pong_tty, pong_input_handler, NULL);
     pong_tty.cursor_visible = false;
 
     tty_initialize(&pong_tty);

@@ -315,7 +315,7 @@ void check_board_for_clearing(board_t *board)
     }
 }
 
-void tetris_input_handler(keys_t key, bool was_pressed)
+void tetris_input_handler(keys_t key, bool was_pressed, void *data)
 {
     if (!was_pressed)
     {
@@ -370,7 +370,7 @@ void tetris_input_handler(keys_t key, bool was_pressed)
 
 void run_tetris()
 {
-    tetris_tty.on_keypress = tetris_input_handler;
+    tty_set_keypress_callback(&tetris_tty, tetris_input_handler, NULL);
     tetris_tty.cursor_visible = false;
     should_stop = false;
     memset(&board, 0, sizeof(board_t));

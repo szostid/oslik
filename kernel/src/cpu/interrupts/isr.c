@@ -78,7 +78,8 @@ void handle_hw_interrupt(int32_t int_no)
             // is received when handling keypresses.
             pic_eoi(int_no);
 
-            active_tty->on_keypress(key, was_pressed);
+            active_tty->on_keypress(key, was_pressed,
+                                    active_tty->keypress_callback_data);
 
             return;
         }

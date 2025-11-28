@@ -48,7 +48,7 @@ typedef struct
 } terminal_entry_t;
 
 /// @brief Callback called on a keypress.
-typedef void (*keypress_callback_t)(keys_t key, bool was_pressed);
+typedef void (*keypress_callback_t)(keys_t key, bool was_pressed, void *data);
 
 /// @brief A virtual terminal buffer.
 ///
@@ -62,6 +62,7 @@ typedef struct
     bool cursor_visible;
     terminal_entry_color_t color;
     keypress_callback_t on_keypress;
+    void *keypress_callback_data;
 } tty_t;
 
 /// @brief Initializes the terminal for usage
@@ -69,6 +70,10 @@ void tty_initialize(tty_t *tty);
 
 /// @brief Clears the terminal, resets the cursor position and color.
 void tty_clear(tty_t *tty, terminal_color_t background);
+
+/// @brief Sets the callback that's called on every key press/release
+void tty_set_keypress_callback(tty_t *tty, keypress_callback_t callback,
+                               void *data);
 
 /// @brief Reads the terminal entry at `x, y`
 ///
