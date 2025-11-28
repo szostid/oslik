@@ -75,11 +75,10 @@ typedef struct
     paddle_t right_paddle;
     ball_t ball;
     uint64_t time;
+    bool should_stop;
 } pong_game_t;
 
 tty_t pong_tty;
-pong_game_t game;
-bool should_stop_pong = false;
 
 static inline bool inside(float y, float top, float bottom)
 {
@@ -159,17 +158,19 @@ void update_game(pong_game_t *game, float dt)
 
 void pong_input_handler(keys_t key, bool was_pressed, void *data)
 {
+    pong_game_t *game = (pong_game_t *)data;
+
     if (!was_pressed)
     {
         switch (key)
         {
         case KB_S:
         case KB_W:
-            game.left_paddle.velocity = 0;
+            game->left_paddle.velocity = 0;
             break;
         case KB_Arrow_Down:
         case KB_Arrow_Up:
-            game.right_paddle.velocity = 0;
+            game->right_paddle.velocity = 0;
             break;
 
         default:
@@ -182,31 +183,33 @@ void pong_input_handler(keys_t key, bool was_pressed, void *data)
     switch (key)
     {
     case KB_Space:
-        game.ball.isPaused = false;
+        game->ball.isPaused = false;
         return;
     case KB_S:
-        game.left_paddle.velocity = 1;
+        game->left_paddle.velocity = 1;
         return;
     case KB_W:
-        game.left_paddle.velocity = -1;
+        game->left_paddle.velocity = -1;
         return;
     case KB_Arrow_Down:
-        game.right_paddle.velocity = 1;
+        game->right_paddle.velocity = 1;
         return;
     case KB_Arrow_Up:
-        game.right_paddle.velocity = -1;
+        game->right_paddle.velocity = -1;
         return;
     case KB_Q:
     case KB_Esc:
-        should_stop_pong = true;
+        game->should_stop = true;
         return;
     default:
         return;
     }
 }
 
-void setup_game(pong_game_t *game)
+pong_game_t create_game()
 {
+    pong_game_t game;
+
     int default_paddle_pos = (FRAME_SIZE_Y - PADDLE_HEIGHT) / 2;
 
     paddle_t left_paddle = {
@@ -215,7 +218,7 @@ void setup_game(pong_game_t *game)
         .verticalPosition = default_paddle_pos,
     };
 
-    game->left_paddle = left_paddle;
+    game.left_paddle = left_paddle;
 
     paddle_t right_paddle = {
         .velocity = 0,
@@ -223,11 +226,13 @@ void setup_game(pong_game_t *game)
         .verticalPosition = default_paddle_pos,
     };
 
-    game->right_paddle = right_paddle;
+    game.right_paddle = right_paddle;
 
-    game->time = rdtsc();
+    game.time = rdtsc();
 
-    reset_ball(game);
+    reset_ball(&game);
+
+    return game;
 }
 
 void draw_frame()
@@ -289,7 +294,11 @@ void draw_paddle(paddle_t *paddle)
 
 void run_pong()
 {
-    tty_set_keypress_callback(&pong_tty, pong_input_handler, NULL);
+    pong_game_t game = create_game();
+
+    // the pointer to the game will not be used after this function quits
+    // because we set the active tty back to the kernel tty
+    tty_set_keypress_callback(&pong_tty, pong_input_handler, &game);
     pong_tty.cursor_visible = false;
 
     tty_initialize(&pong_tty);
@@ -297,11 +306,9 @@ void run_pong()
 
     srand((uint32_t)rdtsc());
 
-    setup_game(&game);
-
     uint64_t last_frame_time = rdtsc();
 
-    while (!should_stop_pong)
+    while (!game.should_stop)
     {
         uint64_t time = rdtsc();
 

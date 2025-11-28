@@ -4,7 +4,6 @@
 #include <tty.h>
 
 tty_t tetris_tty;
-bool should_stop = false;
 
 #define TETRIS_WIDTH 10
 #define TETRIS_HEIGHT 20
@@ -34,6 +33,12 @@ typedef struct
     int board[TETRIS_WIDTH * TETRIS_HEIGHT];
     piece_t falling_piece;
 } board_t;
+
+typedef struct
+{
+    board_t board;
+    bool should_stop;
+} tetris_game_t;
 
 #define SHAPE_COUNT 6
 
@@ -94,8 +99,6 @@ static int32_t colors[] = {
     TTY_COLOR_CYAN,  TTY_COLOR_BLUE,    TTY_COLOR_LIGHT_BROWN,
     TTY_COLOR_GREEN, TTY_COLOR_MAGENTA, TTY_COLOR_RED,
 };
-
-static board_t board;
 
 inline vec2_t rotate_vec2(vec2_t vec, uint32_t count)
 {
@@ -322,69 +325,75 @@ void tetris_input_handler(keys_t key, bool was_pressed, void *data)
         return;
     }
 
+    tetris_game_t *game = (tetris_game_t *)data;
+    board_t *board = &game->board;
+
     switch (key)
     {
     case KB_A:
     case KB_Arrow_Left:
-        if (!does_falling_piece_collide_after_moving(&board, (vec2_t){-1, 0}))
+        if (!does_falling_piece_collide_after_moving(board, (vec2_t){-1, 0}))
         {
-            board.falling_piece.position =
-                add_vec2(board.falling_piece.position, (vec2_t){-1, 0});
+            board->falling_piece.position =
+                add_vec2(board->falling_piece.position, (vec2_t){-1, 0});
         }
         break;
     case KB_D:
     case KB_Arrow_Right:
-        if (!does_falling_piece_collide_after_moving(&board, (vec2_t){1, 0}))
+        if (!does_falling_piece_collide_after_moving(board, (vec2_t){1, 0}))
         {
-            board.falling_piece.position =
-                add_vec2(board.falling_piece.position, (vec2_t){1, 0});
+            board->falling_piece.position =
+                add_vec2(board->falling_piece.position, (vec2_t){1, 0});
         }
         break;
     case KB_S:
     case KB_Arrow_Down:
-        if (!does_falling_piece_collide_after_moving(&board, (vec2_t){0, 1}))
+        if (!does_falling_piece_collide_after_moving(board, (vec2_t){0, 1}))
         {
-            board.falling_piece.position =
-                add_vec2(board.falling_piece.position, (vec2_t){0, 1});
+            board->falling_piece.position =
+                add_vec2(board->falling_piece.position, (vec2_t){0, 1});
         }
         break;
     case KB_W:
     case KB_Arrow_Up:
-        if (!does_falling_piece_collide_after_rotating(&board))
+        if (!does_falling_piece_collide_after_rotating(board))
         {
-            board.falling_piece.angle++;
+            board->falling_piece.angle++;
         }
         break;
     case KB_Q:
     case KB_Esc:
-        should_stop = true;
+        game->should_stop = true;
         return;
     default:
         return;
     }
 
-    draw_board(&board);
+    draw_board(board);
 }
 
 #define CYCLES 1000000000
 
 void run_tetris()
 {
-    tty_set_keypress_callback(&tetris_tty, tetris_input_handler, NULL);
+    tetris_game_t game;
+    memset(&game, 0, sizeof(tetris_game_t));
+
+    // the pointer to the game will not be used after this function quits
+    // because we set the active tty back to the kernel tty
+    tty_set_keypress_callback(&tetris_tty, tetris_input_handler, &game);
     tetris_tty.cursor_visible = false;
-    should_stop = false;
-    memset(&board, 0, sizeof(board_t));
 
     tty_initialize(&tetris_tty);
     set_active_tty(&tetris_tty);
 
     srand((uint32_t)rdtsc());
 
-    spawn_falling_piece(&board);
+    spawn_falling_piece(&game.board);
 
     uint64_t last_frame_time = rdtsc();
 
-    while (!should_stop)
+    while (!game.should_stop)
     {
         uint64_t time = rdtsc();
 
@@ -395,11 +404,12 @@ void run_tetris()
 
         last_frame_time = time;
 
-        if (does_falling_piece_collide_after_moving(&board, (vec2_t){0, 1}))
+        if (does_falling_piece_collide_after_moving(&game.board,
+                                                    (vec2_t){0, 1}))
         {
-            solidify_falling_piece(&board);
-            check_board_for_clearing(&board);
-            bool did_loose = spawn_falling_piece(&board);
+            solidify_falling_piece(&game.board);
+            check_board_for_clearing(&game.board);
+            bool did_loose = spawn_falling_piece(&game.board);
 
             if (did_loose)
             {
@@ -420,11 +430,11 @@ void run_tetris()
         }
         else
         {
-            board.falling_piece.position =
-                add_vec2(board.falling_piece.position, (vec2_t){0, 1});
+            game.board.falling_piece.position =
+                add_vec2(game.board.falling_piece.position, (vec2_t){0, 1});
         }
 
-        draw_board(&board);
+        draw_board(&game.board);
     }
 
     set_active_tty(&kernel_tty);
