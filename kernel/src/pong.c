@@ -96,6 +96,21 @@ void reset_ball(pong_game_t *game)
     ball->isPaused = true;
 }
 
+float clamp(float val, float min, float max)
+{
+    if (val >= max)
+    {
+        return max;
+    }
+
+    if (val <= min)
+    {
+        return min;
+    }
+
+    return val;
+}
+
 void update_game(pong_game_t *game, float dt)
 {
     ball_t *ball = &game->ball;
@@ -152,8 +167,12 @@ void update_game(pong_game_t *game, float dt)
         }
     }
 
-    left_paddle->verticalPosition += left_paddle->velocity;
-    right_paddle->verticalPosition += right_paddle->velocity;
+    left_paddle->verticalPosition =
+        clamp(left_paddle->velocity + left_paddle->verticalPosition, 1,
+              FRAME_END_Y - PADDLE_HEIGHT);
+    right_paddle->verticalPosition =
+        clamp(right_paddle->velocity + right_paddle->verticalPosition, 1,
+              FRAME_END_Y - PADDLE_HEIGHT);
 }
 
 void pong_input_handler(keys_t key, bool was_pressed, void *data)
